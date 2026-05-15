@@ -58,7 +58,9 @@ QUERY = (
     'OR "long-term variation"[tiab] OR "long-term variations"[tiab] '
     'OR "long-term variability"[tiab] OR "long-term biological"[tiab] '
     'OR "day-to-day variability"[tiab]))'
-)
+       ' AND humans[MeSH Terms]'
+       ' NOT ("Plants"[MeSH] OR "Ecology"[MeSH] OR "Ecosystem"[MeSH] OR veterinary[sb])'
+   )
 
 RECIPIENTS = ["jdgmarco@gmail.com", "isabelmorenoparro@gmail.com"]
 
