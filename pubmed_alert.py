@@ -104,7 +104,31 @@ BIORXIV_EXCLUDE_CATEGORIES = {
     "plant biology",
     "paleontology",
     "zoology",
+    "animal behavior and cognition",
 }
+
+# Preprints must mention at least one of these context terms in title or
+# abstract. This is the single biggest noise-reducer: methodological uses of
+# "biological variation" in bioinformatics/neuroimaging, ecological studies,
+# and pure animal/plant biology almost never include these clinical-lab terms.
+PREPRINT_REQUIRED_CONTEXT = [
+    "biomarker",            # covers "biomarker" and "biomarkers"
+    "measurand",            # covers "measurand" and "measurands"
+    "analyte",              # covers "analyte" and "analytes"
+    "serum",
+    "plasma",
+    "whole blood",
+    "urine",
+    "saliva",
+    "cerebrospinal fluid",
+    "reference change value",
+    "reference interval",
+    "analytical performance",
+    "analytical variation",
+    "laboratory medicine",
+    "clinical chemistry",
+    "coefficient of variation",
+]
 
 RECIPIENTS = ["jdgmarco@gmail.com", "isabelmorenoparro@gmail.com"]
 
@@ -250,9 +274,10 @@ def fetch_preprints_server(server: str, days: int) -> list[dict]:
 
 
 def search_preprints(days: int) -> list[dict]:
-    """Return preprints matching BV keywords, deduplicated by DOI
-    (keeping the highest version)."""
+    """Return preprints matching BV keywords AND a clinical-lab context term,
+    deduplicated by DOI (keeping the highest version)."""
     keywords_lower = [k.lower() for k in PREPRINT_KEYWORDS]
+    context_lower = [c.lower() for c in PREPRINT_REQUIRED_CONTEXT]
     matches: list[dict] = []
 
     for server in ("biorxiv", "medrxiv"):
@@ -271,6 +296,8 @@ def search_preprints(days: int) -> list[dict]:
             abstract = (pp.get("abstract") or "").strip()
             haystack = f"{title} {abstract}".lower()
             if not any(kw in haystack for kw in keywords_lower):
+                continue
+            if not any(ctx in haystack for ctx in context_lower):
                 continue
 
             matches.append(
